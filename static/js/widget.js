@@ -166,18 +166,23 @@
           }
 
           if (trimmed.startsWith("data:")) {
-            const raw = trimmed.slice(5); // preserve leading space if any
+            const raw = trimmed.slice(5).trim();
+            if (!raw) continue;
 
-            // Check if it's a meta JSON object
-            if (raw.trim().startsWith("{")) {
-              try {
-                const meta = JSON.parse(raw.trim());
-                if (meta.cached) isCached = true;
-              } catch (_) {}
+            let parsed;
+            try {
+              parsed = JSON.parse(raw);
+            } catch (_) {
               continue;
             }
 
-            const token = raw; // space-prefixed token from SSE "data: token"
+            // Meta payloads arrive as JSON objects; tokens as JSON strings.
+            if (parsed && typeof parsed === "object") {
+              if (parsed.cached) isCached = true;
+              continue;
+            }
+            if (typeof parsed !== "string") continue;
+            const token = parsed;
 
             if (firstToken) {
               removeTypingIndicator();

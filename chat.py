@@ -5,7 +5,7 @@ chat.py — Orchestration layer: cache → RAG → LLM → store.
 It is consumed by the Flask route in app.py.
 """
 
-import asyncio
+import json
 import logging
 import time
 from collections.abc import Generator
@@ -63,10 +63,17 @@ def _get_history(session_id: str, max_turns: int) -> list[dict]:
 
 
 def _sse(event: str | None, data: str) -> str:
-    """Format a single SSE message."""
+    """
+    Format a single SSE message.
+
+    Token payloads (event is None) are JSON-encoded so newlines and other
+    control characters survive the SSE transport intact. Named events
+    (meta, done) keep their literal payload — meta is already JSON, and
+    done has an empty body.
+    """
     if event:
         return f"event: {event}\ndata: {data}\n\n"
-    return f"data: {data}\n\n"
+    return f"data: {json.dumps(data)}\n\n"
 
 
 def handle_chat(message: str, session_id: str) -> Generator[str, None, None]:

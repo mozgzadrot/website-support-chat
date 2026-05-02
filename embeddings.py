@@ -6,8 +6,6 @@ All other modules import `embed_text` and `cosine_similarity` from here.
 """
 
 import logging
-from functools import lru_cache
-from typing import Union
 
 import numpy as np
 from sentence_transformers import SentenceTransformer
